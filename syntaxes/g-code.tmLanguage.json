@@ -1,0 +1,22 @@
+{
+  "scopeName": "source.g-code",
+  "patterns": [
+    { "match": "\\(.*?\\)", "name": "comment.block.g-code" },
+
+    { "match": "(?<![A-Za-z])X[^A-Za-z]*", "name": "gcode.axis.x" },
+    { "match": "(?<![A-Za-z])Y[^A-Za-z]*", "name": "gcode.axis.y" },
+    { "match": "(?<![A-Za-z])Z[^A-Za-z]*", "name": "gcode.axis.z" },
+    { "match": "(?<![A-Za-z])A[^A-Za-z]*", "name": "gcode.axis.a" },
+    { "match": "(?<![A-Za-z])B[^A-Za-z]*", "name": "gcode.axis.b" },
+    { "match": "(?<![A-Za-z])C[^A-Za-z]*", "name": "gcode.axis.c" },
+
+    { "match": "(?<![A-Za-z])I[^A-Za-z]*", "name": "gcode.arc.i" },
+    { "match": "(?<![A-Za-z])J[^A-Za-z]*", "name": "gcode.arc.j" },
+    { "match": "(?<![A-Za-z])K[^A-Za-z]*", "name": "gcode.arc.k" },
+    { "match": "(?<![A-Za-z])R[^A-Za-z]*", "name": "gcode.arc.r" },
+
+    { "match": "(?<![A-Za-z])F[^A-Za-z]*", "name": "gcode.feedrate" },
+    { "match": "(?<![A-Za-z])G[^A-Za-z]*", "name": "gcode.gcommand" },
+    { "match": "(?<![A-Za-z])M[^A-Za-z]*", "name": "gcode.mcommand" }
+  ]
+}
