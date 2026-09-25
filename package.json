@@ -8,6 +8,10 @@
   "categories": [
     "Programming Languages"
   ],
+  "activationEvents": [
+    "onLanguage: g-code",
+    "onStartupFinished"
+  ],
   "contributes": {
     "languages": [
       {
@@ -36,8 +40,14 @@
         },
         "g-code.fileExtensions": {
           "type": "array",
-          "items": {"type": "string"},
-          "default": [".nc", ".ncf", ".prg"],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".nc",
+            ".ncf",
+            ".prg"
+          ],
           "description": "File extensions this extension should operate on."
         },
         "g-code.syncPattern": {
@@ -53,18 +63,18 @@
       }
     },
     "commands": [
-        {
-            "command": "g-code.syncView",
-            "title": "G-Code: Toggle Sync View",
-            "icon": "$(arrow-swap)"
-        }
+      {
+        "command": "g-code.syncView",
+        "title": "G-Code: Toggle Sync View",
+        "icon": "$(arrow-swap)"
+      }
     ],
     "keybindings": [
-        {
-            "key": "ctrl+shift+2",
-            "command": "g-code.syncView",
-            "when": "editorLangId == g-code"
-        }
+      {
+        "key": "ctrl+shift+2",
+        "command": "g-code.syncView",
+        "when": "editorLangId == g-code"
+      }
     ],
     "grammars": [
       {
@@ -73,16 +83,16 @@
         "path": "./syntaxes/g-code.tmLanguage.json"
       }
     ],
-  "menus": {
-    "editor/title": [
-      {
-        "command": "g-code.syncView",
-        "when": "editorLangId == g-code",
-        "group": "navigation"
-      }
-    ]
-  }
-},
+    "menus": {
+      "editor/title": [
+        {
+          "command": "g-code.syncView",
+          "when": "editorLangId == g-code",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
   "description": "G-Code Extension for Multichannel CNC Machines",
   "main": "./out/extension.js",
   "scripts": {
