@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import { syncView, SyncViewSession, handleTabEvent } from "./commands/syncView";
 import { VirtualFileSystemProvider } from "./virtualFileSystem";
-import { group } from "console";
+import { channelSync } from "./commands/channelSync";
+import { initLogger, log, showLog } from "./logger";
 
 //vscode entry point,
 export function activate(context: vscode.ExtensionContext) {
@@ -15,6 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
   if (staleTabs.length > 0) {
     vscode.window.tabGroups.close(staleTabs);
   }
+  initLogger();
   const syncViewSession = new SyncViewSession();
   const virtualFs = new VirtualFileSystemProvider(syncViewSession);
 
@@ -29,11 +31,32 @@ export function activate(context: vscode.ExtensionContext) {
       "g-code.syncView",
       syncView(virtualFs, syncViewSession),
     ),
+    vscode.commands.registerCommand("g-code.channelSyncOn", () => {
+      syncViewSession.setSyncCodeMatching(true);
+      channelSync(syncViewSession);
+    }),
+    vscode.commands.registerCommand("g-code.channelSyncOff", () => {
+      syncViewSession.setSyncCodeMatching(false);
+      channelSync(syncViewSession);
+    }),
   );
 
   context.subscriptions.push(
     vscode.window.tabGroups.onDidChangeTabs((event) =>
       handleTabEvent(event, syncViewSession),
+    ),
+  );
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      channelSync(syncViewSession);
+    }),
+    vscode.workspace.onDidChangeTextDocument((e) => {
+      if (e.document.languageId !== "g-code") return;
+      channelSync(syncViewSession);
+    }),
+    vscode.workspace.onDidChangeConfiguration(() =>
+      channelSync(syncViewSession),
     ),
   );
 }

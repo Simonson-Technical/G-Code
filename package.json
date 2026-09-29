@@ -25,7 +25,8 @@
           ".prg",
           ".txt",
           ".min",
-          ".ssb"
+          ".ssb",
+          ".txt"
         ],
         "configuration": "./language-configuration.json"
       }
@@ -52,28 +53,153 @@
         },
         "g-code.syncPattern": {
           "type": "string",
-          "default": "(![1-3]?)+L\\d+|G[600|610|620|630|650]",
+          "default": "(![1-3]?)+L\\d+",
           "description": "Regex pattern for channel synchronization."
+        },
+        "g-code.channelLabels": {
+          "type": "object",
+          "description": "Maps a channel/stream number to its wait-code regex pattern.",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {
+            "1": "!1",
+            "2": "!2",
+            "3": "!3"
+          }
         }
       }
     },
     "configurationDefaults": {
       "[g-code]": {
-        "editor.comments.insertSpace": false
+        "editor.comments.insertSpace": false,
+        "editor.colorDecorators": false,
+        "editor.defaultColorDecorators": "never"
+      },
+      "editor.tokenColorCustomizations": {
+        "[*]": {
+          "textMateRules": [
+            {
+              "scope": "source.g-code",
+              "settings": {
+                "foreground": "#D4D4D4"
+              }
+            },
+            {
+              "scope": "comment.block.g-code",
+              "settings": {
+                "foreground": "#7F848E"
+              }
+            },
+            {
+              "scope": "x-axis.g-code",
+              "settings": {
+                "foreground": "#61AFEF"
+              }
+            },
+            {
+              "scope": "y-axis.g-code",
+              "settings": {
+                "foreground": "#E5C07B"
+              }
+            },
+            {
+              "scope": "z-axis.g-code",
+              "settings": {
+                "foreground": "#E06C75"
+              }
+            },
+            {
+              "scope": "b-axis.g-code",
+              "settings": {
+                "foreground": "#56B6C2"
+              }
+            },
+            {
+              "scope": "a-axis.g-code",
+              "settings": {
+                "foreground": "#D9648F"
+              }
+            },
+            {
+              "scope": "c-axis.g-code",
+              "settings": {
+                "foreground": "#98C379"
+              }
+            },
+            {
+              "scope": "radius.g-code",
+              "settings": {
+                "foreground": "#E88AB8"
+              }
+            },
+            {
+              "scope": "radI.g-code",
+              "settings": {
+                "foreground": "#4B8BD6"
+              }
+            },
+            {
+              "scope": "radJ.g-code",
+              "settings": {
+                "foreground": "#D4A349"
+              }
+            },
+            {
+              "scope": "radK.g-code",
+              "settings": {
+                "foreground": "#C8505B"
+              }
+            },
+            {
+              "scope": "gcode.g-code",
+              "settings": {
+                "foreground": "#6FB06A"
+              }
+            },
+            {
+              "scope": "mcode.g-code",
+              "settings": {
+                "foreground": "#A9A1E8"
+              }
+            },
+            {
+              "scope": "tool.g-code",
+              "settings": {
+                "foreground": "#E8B923"
+              }
+            },
+            {
+              "scope": "spindle.g-code",
+              "settings": {
+                "foreground": "#C4A484"
+              }
+            },
+            {
+              "scope": "feedrate.g-code",
+              "settings": {
+                "foreground": "#C678DD"
+              }
+            }
+          ]
+        }
       }
     },
     "commands": [
       {
         "command": "g-code.syncView",
-        "title": "G-Code: Toggle Sync View",
-        "icon": "$(arrow-swap)"
-      }
-    ],
-    "keybindings": [
+        "title": "G-Code: Enable Sync View",
+        "icon": "$(book)"
+      },
       {
-        "key": "ctrl+shift+2",
-        "command": "g-code.syncView",
-        "when": "editorLangId == g-code"
+        "command": "g-code.channelSyncOn",
+        "title": "G-Code: Enable Sync Code Matching",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "g-code.channelSyncOff",
+        "title": "G-Code: Disable Sync Code Matching",
+        "icon": "$(eye-closed)"
       }
     ],
     "grammars": [
@@ -88,6 +214,16 @@
         {
           "command": "g-code.syncView",
           "when": "editorLangId == g-code",
+          "group": "navigation"
+        },
+        {
+          "command": "g-code.channelSyncOn",
+          "when": "editorLangId == g-code && !g-code.syncCodeMatchEnabled",
+          "group": "navigation"
+        },
+        {
+          "command": "g-code.channelSyncOff",
+          "when": "editorLangId == g-code && g-code.syncCodeMatchEnabled",
           "group": "navigation"
         }
       ]

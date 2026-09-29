@@ -1,22 +1,87 @@
 {
   "scopeName": "source.g-code",
   "patterns": [
-    { "match": "\\(.*?\\)", "name": "comment.block.g-code" },
-
-    { "match": "(?<![A-Za-z])X[^A-Za-z]*", "name": "gcode.axis.x" },
-    { "match": "(?<![A-Za-z])Y[^A-Za-z]*", "name": "gcode.axis.y" },
-    { "match": "(?<![A-Za-z])Z[^A-Za-z]*", "name": "gcode.axis.z" },
-    { "match": "(?<![A-Za-z])A[^A-Za-z]*", "name": "gcode.axis.a" },
-    { "match": "(?<![A-Za-z])B[^A-Za-z]*", "name": "gcode.axis.b" },
-    { "match": "(?<![A-Za-z])C[^A-Za-z]*", "name": "gcode.axis.c" },
-
-    { "match": "(?<![A-Za-z])I[^A-Za-z]*", "name": "gcode.arc.i" },
-    { "match": "(?<![A-Za-z])J[^A-Za-z]*", "name": "gcode.arc.j" },
-    { "match": "(?<![A-Za-z])K[^A-Za-z]*", "name": "gcode.arc.k" },
-    { "match": "(?<![A-Za-z])R[^A-Za-z]*", "name": "gcode.arc.r" },
-
-    { "match": "(?<![A-Za-z])F[^A-Za-z]*", "name": "gcode.feedrate" },
-    { "match": "(?<![A-Za-z])G[^A-Za-z]*", "name": "gcode.gcommand" },
-    { "match": "(?<![A-Za-z])M[^A-Za-z]*", "name": "gcode.mcommand" }
-  ]
+    { "include": "#x-axis" },
+    { "include": "#y-axis" },
+    { "include": "#z-axis" },
+    { "include": "#a-axis" },
+    { "include": "#b-axis" },
+    { "include": "#c-axis" },
+    { "include": "#radius" },
+    { "include": "#radI" },
+    { "include": "#radJ" },
+    { "include": "#radK" },
+    { "include": "#gcode" },
+    { "include": "#mcode" },
+    { "include": "#tool" },
+    { "include": "#spindle" },
+    { "include": "#feedrate" },
+    { "include": "#comment" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "\\(.*?\\)",
+      "name": "comment.block.g-code"
+    },
+    "x-axis": {
+      "match": "[xXuU][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "x-axis.g-code"
+    },
+    "y-axis": {
+      "match": "[yYvV][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "y-axis.g-code"
+    },
+    "z-axis": {
+      "match": "[zZwW][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "z-axis.g-code"
+    },
+    "a-axis": {
+      "match": "[aA][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "a-axis.g-code"
+    },
+    "b-axis": {
+      "match": "[bB][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "b-axis.g-code"
+    },
+    "c-axis": {
+      "match": "[cChH][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "c-axis.g-code"
+    },
+    "radius": {
+      "match": "[rR][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "radius.g-code"
+    },
+    "radI": {
+      "match": "[iI][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "radI.g-code"
+    },
+    "radJ": {
+      "match": "[jJ][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "radJ.g-code"
+    },
+    "radK": {
+      "match": "[kK][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "radK.g-code"
+    },
+    "gcode": {
+      "match": "[gG]\\d+(?:\\.\\d+)?",
+      "name": "gcode.g-code"
+    },
+    "mcode": {
+      "match": "[mM]\\d+(?:\\.\\d+)?",
+      "name": "mcode.g-code"
+    },
+    "tool": {
+      "match": "[tT]\\d+",
+      "name": "tool.g-code"
+    },
+    "spindle": {
+      "match": "[sS](\\d+)?(=\\d+)?",
+      "name": "spindle.g-code"
+    },
+    "feedrate": {
+      "match": "[fF](\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "name": "feedrate.g-code"
+    }
+  }
 }
