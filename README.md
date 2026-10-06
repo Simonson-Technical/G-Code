@@ -40,25 +40,25 @@ These appear as buttons in the editor title bar when a G-Code file is active.
 
 ### Enable Sync View
 
-This command opens a file picker that finds files in the working directory only. If you cannot find a file, make sure you have the correct directory(folder) open in VSCode. It also only matches files with the correct file extension(s).
+- This command opens a file picker that finds files in the working directory only. If you cannot find a file, make sure you have the correct directory(folder) open in VSCode. It also only matches files with the correct file extension(s).
 
-If your machine accepts code structured in a single file and splits channels at the machine control, you must have a split marker setup in your configuration file. The default is setup for Citizen controls.
+- If your machine accepts code structured in a single file and splits channels at the machine control, you must have a split marker setup in your configuration file. The default is setup for Citizen controls.
 
-Select either a single file to split, or one file per control channel.
+- Select either a single file to split, or one file per control channel.
 
-If you are selecting multiple files, make sure you select them in order matching the channels on your machine control.
+- If you are selecting multiple files, make sure you select them in order matching the channels on your machine control.
 
 ### Enable Sync Matching
 
-This command turns on highlighting for syncing or wait codes for your machine control. It will parse the files in your split view and highlight clean and dirty codes across channels.
+- This command turns on highlighting for syncing or wait codes for your machine control. It will parse the files in your split view and highlight clean and dirty codes across channels.
 
-Command is not available without an active Sync View session.
+- Command is not available without an active Sync View session.
 
-The default configuration is setup for Mitsubishi style wait codes. Edit configuration files for your machine(s).
+- The default configuration is setup for Mitsubishi style wait codes. Edit configuration files for your machine(s).
 
 ### Disable Sync Matching
 
-Turns off highlighting.
+- Turns off highlighting.
 
 ## Settings
 
@@ -77,27 +77,27 @@ You can change settings through the Settings UI or by editing settings.json dire
 
 ### Option 1: Settings UI
 
-Open Settings: File > Preferences > Settings (Code > Settings > Settings on macOS), or press Ctrl+, (Cmd+, on macOS).
+- Open Settings: File > Preferences > Settings (Code > Settings > Settings on macOS), or press Ctrl+, (Cmd+, on macOS).
 
-Type G-Code in the search bar, or expand Extensions > G-Code in the left sidebar.
+- Type G-Code in the search bar, or expand Extensions > G-Code in the left sidebar.
 
-Edit the value. Text and list settings can be changed in place.
+- Edit the value. Text and list settings can be changed in place.
 
-g-code.channelLabels is an object, so the UI shows an Edit in settings.json link instead of a field. Click it to continue in JSON.
+- g-code.channelLabels is an object, so the UI shows an Edit in settings.json link instead of a field. Click it to continue in JSON.
 
 ### Option 2: settings.json
 
-Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P).
+- Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P).
 
-Run one of:
+- Run one of:
 
-Preferences: Open User Settings (JSON) to apply the setting everywhere on your machine.
+    - Preferences: Open User Settings (JSON) to apply the setting everywhere on your machine.
 
-Preferences: Open Workspace Settings (JSON) to apply it only to the current project. This is saved in .vscode/settings.json, so it can be committed and shared with a team.
+    - Preferences: Open Workspace Settings (JSON) to apply it only to the current project. This is saved in .vscode/settings.json, so it can be committed and shared with a team.
 
-Add or change the g-code.* keys, then save.
+- Add or change the g-code.* keys, then save.
 
-Workspace settings override user settings, which override the extension defaults. If a setting does not seem to take effect, run Developer: Reload Window from the Command Palette.
+- Workspace settings override user settings, which override the extension defaults. If a setting does not seem to take effect, run Developer: Reload Window from the Command Palette.
 
 ## Highlight colors
  
