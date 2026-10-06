@@ -100,29 +100,6 @@ export function channelSync(session: SyncViewSession) {
     file.pushWaitCode(findMatches(doc.getText(), syncPattern, session));
   }
 
-  // for (const file of syncViewFiles) {
-  //   const waitCodes = file.getWaitCodes();
-  //   for (const wc of waitCodes) {
-  //     if (wc.getCleanliness()) continue;
-  //     const matches: WaitCode[] = [];
-  //     let labels = wc.getChannelLabels();
-  //     if (labels.length === 0) {
-  //       labels = [...session.getChannelLabels().keys()];
-  //     }
-  //     for (const label of labels) {
-  //       const fileToMatch = session.getFileByLabel(label);
-  //       if (!fileToMatch) continue;
-  //       const match = fileToMatch.getMatchingWaitCode(label);
-  //       if (!match) continue;
-  //       if (match.getCleanliness()) continue;
-  //       matches.push(match);
-  //     }
-  //     if (matches.length !== labels.length) continue;
-  //     wc.flagCleanliness(true);
-  //     matches.forEach(m => m.flagCleanliness(true));
-  //   }
-  // }
-
   const maxCount: number = session.getMaxWaitCodes();
 
   const currentID: Map<string, number> = new Map(

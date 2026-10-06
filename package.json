@@ -2,8 +2,14 @@
   "name": "g-code-multi-channel",
   "displayName": "G-Code",
   "version": "0.0.1",
+  "publisher": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Simonson-Technical/G-Code"
+  },
+  "icon": "images/icon.png",
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.139.0"
   },
   "categories": [
     "Programming Languages"

@@ -1,0 +1,23 @@
+trigger: none   # manual runs only, for now
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+
+- script: |
+    npm ci
+    npm install -g @vscode/vsce
+  displayName: 'Install dependencies'
+
+- task: AzureCLI@2
+  displayName: 'Publish extension'
+  inputs:
+    azureSubscription: <ServiceConnectionName>
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      vsce publish --azure-credential
