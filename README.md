@@ -1,6 +1,6 @@
 # G-Code (Multi-Channel)
 
-A VS Code extension for editing G-code on multi-channel CNC machines, such as Swiss-type and mill-turn lathes where code for several channels (paths) needs to be compared and edited simultaneously.
+A VS Code extension for editing G-code on multi-channel CNC machines such as Swiss-type and mill-turn lathes where code for several channels (paths) needs to be compared and edited simultaneously.
 
 ## Features
 
