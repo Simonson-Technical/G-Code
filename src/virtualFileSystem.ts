@@ -119,7 +119,7 @@ export class VirtualFileSystemProvider implements vscode.FileSystemProvider {
         );
         return doc ? doc.getText() : "";
       })
-      .join("\n");
+      .join("");
     await this.applyToRealDocument(realUri, newText);
     this._emitter.fire([{ type: vscode.FileChangeType.Changed, uri }]);
   }

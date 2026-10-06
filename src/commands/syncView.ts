@@ -166,26 +166,9 @@ export class SyncViewSession {
     return x;
   }
 
-  // getOrderedRealUris(): vscode.Uri[] {
-  //   return [...this.realUris.keys()]
-  //     .sort((a, b) => a - b)
-  //     .map((key) => this.realUris.get(key)!);
-  // }
-
-  // getVirtualUris(): Map<number, vscode.Uri> {
-  //   return this.virtualUris;
-  // }
-
-  // getOrderedVirtualUris(): vscode.Uri[] {
-  //   return [...this.virtualUris.keys()]
-  //     .sort((a, b) => a - b)
-  //     .map((key) => this.virtualUris.get(key)!);
-  // }
-
-  deactivateSession(): void {
+    deactivateSession(): void {
     vscode.window.showInformationMessage("Sync View Session deactivated.");
     this.syncFiles.length = 0;
-    // this.virtualUris.clear();
     this.isVirtualFs = false;
     this.isActive = false;
     this.originalUri = undefined;
@@ -218,7 +201,7 @@ export function syncView(
 
     const pickedFiles = await pickFilesOrdered(items);
 
-    if (!pickedFiles) {
+    if (!pickedFiles || (pickedFiles.length === 0)) {
       return;
     } else if (pickedFiles.length > 1) {
       let streamNumber = 1;

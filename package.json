@@ -25,8 +25,7 @@
           ".prg",
           ".txt",
           ".min",
-          ".ssb",
-          ".txt"
+          ".ssb"
         ],
         "configuration": "./language-configuration.json"
       }
@@ -154,7 +153,7 @@
             {
               "scope": "gcode.g-code",
               "settings": {
-                "foreground": "#6FB06A"
+                "foreground": "#9DB686"
               }
             },
             {
@@ -166,7 +165,7 @@
             {
               "scope": "tool.g-code",
               "settings": {
-                "foreground": "#E8B923"
+                "foreground": "#D4D4D4"
               }
             },
             {
@@ -178,7 +177,31 @@
             {
               "scope": "feedrate.g-code",
               "settings": {
-                "foreground": "#C678DD"
+                "foreground": "#C4A484"
+              }
+            },
+            {
+              "scope": "rapid.g-code",
+              "settings": {
+                "foreground": "#E8403A"
+              }
+            },
+            {
+              "scope": "linear.g-code",
+              "settings": {
+                "foreground": "#2FD65A"
+              }
+            },
+            {
+              "scope": "arcCW.g-code",
+              "settings": {
+                "foreground": "#F5D327"
+              }
+            },
+            {
+              "scope": "arcCCW.g-code",
+              "settings": {
+                "foreground": "#1E8CFF"
               }
             }
           ]
@@ -243,6 +266,7 @@
   "devDependencies": {
     "@types/node": "^22.20.2",
     "@types/vscode": "^1.137.0",
+    "knip": "^6.39.0",
     "typescript": "^7.0.2"
   }
 }

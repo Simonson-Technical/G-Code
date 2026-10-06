@@ -1,6 +1,10 @@
 {
   "scopeName": "source.g-code",
   "patterns": [
+    { "include": "#linear" },
+    { "include": "#arcCW" },
+    { "include": "#arcCCW" },
+    { "include": "#rapid" },
     { "include": "#x-axis" },
     { "include": "#y-axis" },
     { "include": "#z-axis" },
@@ -24,43 +28,43 @@
       "name": "comment.block.g-code"
     },
     "x-axis": {
-      "match": "[xXuU][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[xXuU][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "x-axis.g-code"
     },
     "y-axis": {
-      "match": "[yYvV][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[yYvV][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "y-axis.g-code"
     },
     "z-axis": {
-      "match": "[zZwW][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[zZwW][-]?(\\d+(?:\\.\\d+)?|\\.\\d+|\\[[^\\]]*\\])",
       "name": "z-axis.g-code"
     },
     "a-axis": {
-      "match": "[aA][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[aA][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "a-axis.g-code"
     },
     "b-axis": {
-      "match": "[bB][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[bB][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "b-axis.g-code"
     },
     "c-axis": {
-      "match": "[cChH][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[cChH][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "c-axis.g-code"
     },
     "radius": {
-      "match": "[rR][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[rR][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "radius.g-code"
     },
     "radI": {
-      "match": "[iI][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[iI][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "radI.g-code"
     },
     "radJ": {
-      "match": "[jJ][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[jJ][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "radJ.g-code"
     },
     "radK": {
-      "match": "[kK][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[kK][-]?(\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "radK.g-code"
     },
     "gcode": {
@@ -80,8 +84,24 @@
       "name": "spindle.g-code"
     },
     "feedrate": {
-      "match": "[fF](\\d+(?:\\.\\d+)?|\\.\\d+)?",
+      "match": "[fF](\\d+(?:\\.\\d+)?|\\.\\d+)",
       "name": "feedrate.g-code"
+    },
+    "rapid": {
+      "match": "[gG]0{1,2}(?!\\d)",
+      "name": "rapid.g-code"
+    },
+    "linear": {
+      "match": "[gG]0?1(?!\\d)",
+      "name": "linear.g-code"
+    },
+    "arcCW": {
+      "match": "[gG]0?2(?!\\d)",
+      "name": "arcCW.g-code"
+    },
+    "arcCCW": {
+      "match": "[gG]0?3(?!\\d)",
+      "name": "arcCCW.g-code"
     }
   }
 }

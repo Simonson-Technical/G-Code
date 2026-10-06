@@ -32,6 +32,10 @@ export function activate(context: vscode.ExtensionContext) {
       syncView(virtualFs, syncViewSession),
     ),
     vscode.commands.registerCommand("g-code.channelSyncOn", () => {
+      if (!syncViewSession.getStatus()) {
+        vscode.window.showInformationMessage("No current Sync View session.");
+        return;
+      }
       syncViewSession.setSyncCodeMatching(true);
       channelSync(syncViewSession);
     }),
