@@ -100,9 +100,9 @@ Add or change the g-code.* keys, then save.
 Workspace settings override user settings, which override the extension defaults. If a setting does not seem to take effect, run Developer: Reload Window from the Command Palette.
 
 ## Highlight colors
-
-Token scopes are colored by default as follows. You can override any of them in your own `editor.tokenColorCustomizations`.
-
+ 
+Token scopes are colored by default as follows. See [Changing highlight colors](#changing-highlight-colors) for how to override them.
+ 
 | Element | Scope | Color |
 | --- | --- | --- |
 | X axis | `x-axis.g-code` | `#61AFEF` |
@@ -113,11 +113,15 @@ Token scopes are colored by default as follows. You can override any of them in 
 | C axis | `c-axis.g-code` | `#98C379` |
 | Radius (R) | `radius.g-code` | `#E88AB8` |
 | Arc I / J / K | `radI` / `radJ` / `radK.g-code` | `#4B8BD6` / `#D4A349` / `#C8505B` |
-| G codes | `gcode.g-code` | `#6FB06A` |
+| Rapid move (G0 / G00) | `rapid.g-code` | `#E8403A` |
+| Linear move (G1 / G01) | `linear.g-code` | `#2FD65A` |
+| Arc clockwise (G2 / G02) | `arcCW.g-code` | `#F5D327` |
+| Arc counterclockwise (G3 / G03) | `arcCCW.g-code` | `#1E8CFF` |
+| Other G codes | `gcode.g-code` | `#9DB686` |
 | M codes | `mcode.g-code` | `#A9A1E8` |
-| Tool | `tool.g-code` | `#E8B923` |
+| Tool | `tool.g-code` | `#D4D4D4` |
 | Spindle | `spindle.g-code` | `#C4A484` |
-| Feedrate | `feedrate.g-code` | `#C678DD` |
+| Feedrate | `feedrate.g-code` | `#C4A484` |
 | Block comments | `comment.block.g-code` | `#7F848E` |
 
 ## Status
