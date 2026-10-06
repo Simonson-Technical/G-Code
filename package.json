@@ -9,7 +9,6 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "onLanguage: g-code",
     "onStartupFinished"
   ],
   "contributes": {
