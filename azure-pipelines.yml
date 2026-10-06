@@ -4,20 +4,11 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-
-- script: |
-    npm ci
-    npm install -g @vscode/vsce
-  displayName: 'Install dependencies'
-
 - task: AzureCLI@2
-  displayName: 'Publish extension'
+  displayName: 'Get identity details'
   inputs:
-    azureSubscription: <ServiceConnectionName>
-    scriptType: bash
+    azureSubscription: G-Code_Azure
+    scriptType: pscore
     scriptLocation: inlineScript
     inlineScript: |
-      vsce publish --azure-credential
+      az rest -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me --resource 499b84ac-1321-427f-aa17-267ca6975798
