@@ -8,7 +8,6 @@ export class SyncViewFile {
   private uri: vscode.Uri;
   private channelLabel: string;
   private waitCodes: WaitCode[];
-  private totalPaddingLines: number;
 
   constructor(stream: number, uri: vscode.Uri) {
     this.stream = stream;
@@ -19,7 +18,6 @@ export class SyncViewFile {
         .get<Record<string, string>>("channelLabels") ?? {};
     this.channelLabel = channelLabels[stream.toString()];
     this.waitCodes = [];
-    this.totalPaddingLines = 0;
   }
 
   getUri(): vscode.Uri {
@@ -52,18 +50,6 @@ export class SyncViewFile {
 
   clearWaitCodes(): void {
     this.waitCodes.length = 0;
-  }
-
-  updateTotalPadding(n: number): void {
-    this.totalPaddingLines += n;
-  }
-
-  getTotalPadding(): number {
-    return this.totalPaddingLines;
-  }
-
-  clearTotalPadding(): void {
-    this.totalPaddingLines = 0;
   }
 }
 
@@ -166,7 +152,7 @@ export class SyncViewSession {
     return x;
   }
 
-    deactivateSession(): void {
+  deactivateSession(): void {
     vscode.window.showInformationMessage("Sync View Session deactivated.");
     this.syncFiles.length = 0;
     this.isVirtualFs = false;
@@ -201,7 +187,7 @@ export function syncView(
 
     const pickedFiles = await pickFilesOrdered(items);
 
-    if (!pickedFiles || (pickedFiles.length === 0)) {
+    if (!pickedFiles || pickedFiles.length === 0) {
       return;
     } else if (pickedFiles.length > 1) {
       let streamNumber = 1;

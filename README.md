@@ -18,7 +18,7 @@ The extension's behavior is limited to the extensions listed in the `g-code.file
 
 ## Requirements
 
-- VS Code 1.75 or newer
+- VS Code 1.139 or newer
 
 ## Installation
 
@@ -62,12 +62,12 @@ These appear as buttons in the editor title bar when a G-Code file is active.
 
 ## Settings
 
-| Setting | Default | Description |
-| --- | --- | --- |
-| `g-code.splitMarker` | `\$[2-3]` | Regex used to split a program into channels |
-| `g-code.syncPattern` | `(![1-3]?)+L\d+` | Regex used to identify channel synchronization codes |
-| `g-code.channelLabels` | `{ "1": "!1", "2": "!2", "3": "!3" }` | Maps a channel number to its wait-code pattern |
-| `g-code.fileExtensions` | `[".nc", ".ncf", ".prg"]` | File extensions the extension operates on |
+| Setting | Description |
+| --- | --- |
+| `g-code.splitMarker` | Regex used to split a program into channels |
+| `g-code.syncPattern` | Regex used to identify channel synchronization codes |
+| `g-code.channelLabels` | Maps a channel number to its wait-code pattern |
+| `g-code.fileExtensions` | File extensions the extension operates on |
 
 Adjust `splitMarker`, `syncPattern`, and `channelLabels` to match your control's channel and wait-code conventions.
 
@@ -126,7 +126,7 @@ Token scopes are colored by default as follows. See [Changing highlight colors](
 
 ## Status
 
-Early development (v0.0.1). Issues and feedback are welcome.
+Early development (v0.1.1). Issues and feedback are welcome.
 
 ## About
 
