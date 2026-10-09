@@ -228,37 +228,6 @@ export function syncView(
   }
 }
 
-function closeDocument(uri: vscode.Uri) {
-  const tabsToClose = vscode.window.tabGroups.all
-    .flatMap((group) => group.tabs)
-    .filter(
-      (tab) =>
-        tab.input instanceof vscode.TabInputText &&
-        tab.input.uri.toString() === uri.toString(),
-    );
-  vscode.window.tabGroups.close(tabsToClose);
-}
-
-export function handleTabEvent(
-  event: vscode.TabChangeEvent,
-  session: SyncViewSession,
-): void {
-  if (event.closed.length === 0) return;
-  if (!session.getStatus()) return;
-  for (const tab of event.closed) {
-    if (tab.input instanceof vscode.TabInputText) {
-      const closedUri = tab.input.uri;
-      if (session.getSyncFiles().some((f) => f.getUri() === closedUri)) {
-        const openFiles = session.getSyncFiles();
-        for (const file of openFiles) {
-          closeDocument(file.getUri());
-        }
-        session.deactivateSession();
-      }
-    }
-  }
-}
-
 async function pickFilesOrdered(
   items: { label: string; uri: vscode.Uri }[],
 ): Promise<vscode.Uri[]> {
@@ -305,4 +274,64 @@ async function pickFilesOrdered(
     });
     qp.show();
   });
+}
+
+let closingSession = false;
+
+function isUriOpenInAnyTab(uri: vscode.Uri): boolean {
+  const target = uri.toString();
+  return vscode.window.tabGroups.all
+    .flatMap((group) => group.tabs)
+    .some(
+      (tab) =>
+        tab.input instanceof vscode.TabInputText &&
+        tab.input.uri.toString() === target,
+    );
+}
+
+export function handleTabEvent(
+  event: vscode.TabChangeEvent,
+  session: SyncViewSession,
+): void {
+  if (closingSession) return;
+  if (event.closed.length === 0) return;
+  if (!session.getStatus()) return;
+
+  const sessionUris = session.getSyncFiles().map((f) => f.getUri());
+
+  const sessionTabReallyClosed = event.closed.some((tab) => {
+    if (!(tab.input instanceof vscode.TabInputText)) return false;
+    const closed = tab.input.uri.toString();
+    return (
+      sessionUris.some((u) => u.toString() === closed) &&
+      !isUriOpenInAnyTab(tab.input.uri) // moved or re-laid-out, not closed
+    );
+  });
+
+  if (!sessionTabReallyClosed) return;
+
+  closingSession = true;
+  session.deactivateSession();
+  const remaining = sessionUris.filter(isUriOpenInAnyTab);
+  const tabs = vscode.window.tabGroups.all
+    .flatMap((g) => g.tabs)
+    .filter(
+      (t) =>
+        t.input instanceof vscode.TabInputText &&
+        remaining.some((u) => u.toString() === (t.input as vscode.TabInputText).uri.toString()),
+    );
+  Promise.resolve(vscode.window.tabGroups.close(tabs)).finally(() => {
+    closingSession = false;
+  });
+}
+
+function closeDocument(uri: vscode.Uri) {
+  const tabsToClose = vscode.window.tabGroups.all
+    .flatMap((group) => group.tabs)
+    .filter(
+      (tab) =>
+        tab.input instanceof vscode.TabInputText &&
+        tab.input.uri.toString() === uri.toString(),
+    );
+  vscode.window.tabGroups.close(tabsToClose);
 }
