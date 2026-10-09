@@ -45,7 +45,11 @@ export class SyncViewFile {
   }
 
   getMatchingWaitCode(text: string): WaitCode | undefined {
-    return this.waitCodes.find((code) => code.getText() === text) || undefined;
+    const wcList = this.waitCodes.filter((code) => code.getText() === text);
+    if (wcList.length === 0) {
+      return undefined;
+    }
+    return wcList.find((wc) => !wc.isChecked()) || undefined;
   }
 
   clearWaitCodes(): void {
@@ -243,10 +247,8 @@ export function handleTabEvent(
   if (!session.getStatus()) return;
   for (const tab of event.closed) {
     if (tab.input instanceof vscode.TabInputText) {
-      if (tab.input.uri.scheme !== "syncview") {
-        session.deactivateSession();
-        continue;
-      } else {
+      const closedUri = tab.input.uri;
+      if (session.getSyncFiles().some((f) => f.getUri() === closedUri)) {
         const openFiles = session.getSyncFiles();
         for (const file of openFiles) {
           closeDocument(file.getUri());

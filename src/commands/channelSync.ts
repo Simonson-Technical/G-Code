@@ -62,6 +62,11 @@ const mismatchDecorationType = vscode.window.createTextEditorDecorationType({
   isWholeLine: true,
 });
 
+const duplicateStatusItem = vscode.window.createStatusBarItem(
+  vscode.StatusBarAlignment.Left,
+  100,
+);
+
 const paddingDecorationType = vscode.window.createTextEditorDecorationType({});
 
 export function channelSync(session: SyncViewSession) {
@@ -161,6 +166,7 @@ export function channelSync(session: SyncViewSession) {
           matchingWaitCode.getChannelLabels().length === 0
         ) {
           matchingWaitCode.flagCleanliness(true);
+          matchingWaitCode.markAsChecked(true);
           matchingWaitCodes.push([matchingWaitCode, channel]);
           log(`Found clean waitcode: ${waitCode.getText()}`);
         } else {
@@ -186,9 +192,9 @@ export function channelSync(session: SyncViewSession) {
       }
     }
   }
-
-  checkForOutOfOrderWaitCodes(session);
-  cascadeDirtyWaitCodes(session);
+  // resetWaitCodeChecking(session);
+  // checkForOutOfOrderWaitCodes(session);
+  // cascadeDirtyWaitCodes(session);
 
   for (const file of syncViewFiles) {
     const editor = vscode.window.visibleTextEditors.find(
@@ -258,19 +264,29 @@ function findMatches(
 }
 
 function checkForDuplicateWaitCodes(session: SyncViewSession): void {
+  const lines: string[] = [];
+
   for (const file of session.getSyncFiles()) {
     const waitCodes = file.getWaitCodes();
-    const checkedWCs = new Set();
+    const checkedWCs = new Set<string>();
 
     waitCodes.forEach((wc) => {
       if (checkedWCs.has(wc.getText())) {
-        wc.markAsChecked(true);
-        wc.flagCleanliness(false);
+        lines.push(`Channel ${file.getChannelNumber()}, line ${wc.getLineIndex() + 1}: ${wc.getText()}`);
       } else {
         checkedWCs.add(wc.getText());
       }
     });
   }
+
+  if (lines.length === 0) {
+    duplicateStatusItem.hide();
+    return;
+  }
+
+  duplicateStatusItem.text = `$(info) ${lines.length} duplicate sync code${lines.length === 1 ? "" : "s"}`;
+  duplicateStatusItem.tooltip = lines.join("\n");
+  duplicateStatusItem.show();
 }
 
 function longestIncreasingKeep(seq: number[]): Set<number> {
@@ -396,4 +412,12 @@ function cascadeDirtyWaitCodes(session: SyncViewSession): void {
       }
     }
   } while (changed);
+}
+
+function resetWaitCodeChecking(session: SyncViewSession): void {
+  for (const file of session.getSyncFiles()) {
+    for (const wc of file.getWaitCodes()) {
+      wc.markAsChecked(false);
+    }
+  }
 }

@@ -3,6 +3,7 @@ import { syncView, SyncViewSession, handleTabEvent } from "./commands/syncView";
 import { VirtualFileSystemProvider } from "./virtualFileSystem";
 import { channelSync } from "./commands/channelSync";
 import { initLogger, log, showLog } from "./logger";
+import { register } from "module";
 
 //vscode entry point,
 export function activate(context: vscode.ExtensionContext) {
@@ -25,7 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
       isCaseSensitive: false,
     }),
   );
-
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "g-code.syncView",

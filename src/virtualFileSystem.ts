@@ -4,10 +4,19 @@ import { log } from "./logger";
 
 export class VirtualFileSystemProvider implements vscode.FileSystemProvider {
   private files = new Map<string, Uint8Array>();
+  private meta = new Map<string, { ctime: number; mtime: number }>();
   private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
   onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this._emitter.event;
 
   constructor(private session: SyncViewSession) {}
+
+  private setFile(uri: vscode.Uri, content: Uint8Array) {
+    const key = uri.toString();
+    const now = Date.now();
+    const prev = this.meta.get(key);
+    this.files.set(key, content);
+    this.meta.set(key, { ctime: prev?.ctime ?? now, mtime: now });
+  }
 
   // Sync View Session lifecycle
 
@@ -50,20 +59,14 @@ export class VirtualFileSystemProvider implements vscode.FileSystemProvider {
     for (const match of matches) {
       const splitText = text.slice(currentSplitIndex, match.index);
       const virtualUri = makeVirtualUri(originalUri, streamNumber.toString());
-      (this as any).files.set(
-        virtualUri.toString(),
-        Buffer.from(splitText, "utf8"),
-      );
+      this.setFile(virtualUri, Buffer.from(splitText, "utf8"));
       this.session.pushSyncFiles(streamNumber, virtualUri);
       currentSplitIndex = match.index;
       streamNumber++;
     }
     const splitText = text.slice(currentSplitIndex);
     const virtualUri = makeVirtualUri(originalUri, streamNumber.toString());
-    (this as any).files.set(
-      virtualUri.toString(),
-      Buffer.from(splitText, "utf8"),
-    );
+    this.setFile(virtualUri, Buffer.from(splitText, "utf8"));
     this.session.pushSyncFiles(streamNumber, virtualUri);
   }
 
@@ -77,14 +80,16 @@ export class VirtualFileSystemProvider implements vscode.FileSystemProvider {
   }
 
   stat(uri: vscode.Uri): vscode.FileStat {
-    const content = this.files.get(uri.toString());
-    if (!content) {
+    const key = uri.toString();
+    const content = this.files.get(key);
+    const m = this.meta.get(key);
+    if (content === undefined || !m) {
       throw vscode.FileSystemError.FileNotFound(uri);
     }
     return {
       type: vscode.FileType.File,
-      ctime: Date.now(),
-      mtime: Date.now(),
+      ctime: m.ctime,
+      mtime: m.mtime,
       size: content.length,
     };
   }
@@ -105,19 +110,21 @@ export class VirtualFileSystemProvider implements vscode.FileSystemProvider {
 
   async writeFile(uri: vscode.Uri, content: Uint8Array): Promise<void> {
     if (!this.session.checkIfVirtual())
-      throw vscode.window.showErrorMessage("File System Error: not virtual");
+      throw vscode.window.showErrorMessage("Not a virtual sync view");
     const realUri = this.session.getOriginalUri();
     if (realUri === undefined) {
       throw vscode.FileSystemError.Unavailable("No sync view for this file");
     }
 
+    this.setFile(uri, content);
+
+    const decoder = new TextDecoder();
+
     const newText = this.session
       .getSyncFiles()
-      .map((file) => {
-        const doc = vscode.workspace.textDocuments.find(
-          (d) => d.uri.toString() === file.getUri().toString(),
-        );
-        return doc ? doc.getText() : "";
+      .map((f) => {
+        const data = this.files.get(f.getUri().toString());
+        return data ? decoder.decode(data) : "";
       })
       .join("");
     await this.applyToRealDocument(realUri, newText);

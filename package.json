@@ -228,6 +228,10 @@
         "command": "g-code.channelSyncOff",
         "title": "G-Code: Disable Sync Code Matching",
         "icon": "$(eye-closed)"
+      },
+      {
+        "command": "g-code.showDuplicateSyncCodes",
+        "title": "G-Code: Show Duplicate Sync Codes"
       }
     ],
     "grammars": [
