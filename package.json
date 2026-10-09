@@ -1,7 +1,7 @@
 {
   "name": "g-code-multi-channel",
   "displayName": "G-Code Multi-channel",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "SimonsonTechnicalLLC",
   "repository": {
     "type": "git",
