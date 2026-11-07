@@ -40,7 +40,7 @@ These appear as buttons in the editor title bar when a G-Code file is active.
 
 ### Enable Sync View
 
-- This command opens a file picker that finds files in the working directory only. If you cannot find a file, make sure you have the correct directory(folder) open in VSCode. It also only matches files with the correct file extension(s).
+- This command opens a file picker that finds files in the parent directory of the currently open file. If you cannot find a file, make sure it exists in the same parent directory.
 
 - If your machine accepts code structured in a single file and splits channels at the machine control, you must have a split marker setup in your configuration file. The default is setup for Citizen controls.
 
