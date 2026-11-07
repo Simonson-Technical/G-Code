@@ -184,12 +184,7 @@ export function syncView(
       matchExtension(uri.fsPath, allowedExtensions),
     );
 
-    const items = workspaceFiles.map((uri) => ({
-      label: vscode.workspace.asRelativePath(uri),
-      uri,
-    }));
-
-    const pickedFiles = await pickFilesOrdered(items);
+    const pickedFiles = await pickFilesOrdered();
 
     if (!pickedFiles || pickedFiles.length === 0) {
       return;
@@ -228,20 +223,47 @@ export function syncView(
   }
 }
 
-async function pickFilesOrdered(
-  items: { label: string; uri: vscode.Uri }[],
-): Promise<vscode.Uri[]> {
+async function pickFilesOrdered(): Promise<vscode.Uri[]> {
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  if (!activeUri || activeUri.scheme === "untitled") {
+    vscode.window.showErrorMessage(
+      "Open a saved file first so its folder can be used.",
+    );
+    return [];
+  }
+
+  // folder containing the open file
+  const dirUri = vscode.Uri.joinPath(activeUri, "..");
+
+  let entries: [string, vscode.FileType][];
+  try {
+    entries = await vscode.workspace.fs.readDirectory(dirUri);
+  } catch {
+    vscode.window.showErrorMessage("Could not read the current folder.");
+    return [];
+  }
+
+  const items = entries
+    .filter(([, type]) => type & vscode.FileType.File) // files only, no subfolders
+    .map(([name]) => ({
+      label: name,
+      uri: vscode.Uri.joinPath(dirUri, name),
+      description:
+        vscode.Uri.joinPath(dirUri, name).toString() === activeUri.toString()
+          ? "(open file)"
+          : undefined,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
   return new Promise((resolve) => {
-    const qp = vscode.window.createQuickPick<{
-      label: string;
-      uri: vscode.Uri;
-    }>();
+    const qp = vscode.window.createQuickPick<(typeof items)[number]>();
     qp.items = items;
     qp.canSelectMany = true;
-    qp.placeholder = "Select files";
+    qp.placeholder = `Select files from ${dirUri.path.split("/").pop()}`;
 
     const orderedUris: vscode.Uri[] = [];
     let previousSelection: typeof items = [];
+    let accepted = false;
 
     qp.onDidChangeSelection((selection) => {
       const newlyAdded = selection.filter(
@@ -265,13 +287,17 @@ async function pickFilesOrdered(
       }
       previousSelection = [...selection];
     });
+
     qp.onDidAccept(() => {
+      accepted = true;
       qp.hide();
-      resolve(orderedUris);
     });
+
     qp.onDidHide(() => {
       qp.dispose();
+      resolve(accepted ? orderedUris : []);
     });
+
     qp.show();
   });
 }

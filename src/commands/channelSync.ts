@@ -9,14 +9,22 @@ export class WaitCode {
   private matchText: string;
   private isClean: boolean;
   private checked: boolean;
+  private hostFile: SyncViewFile;
 
-  constructor(lineIndex: number, text: string, id: number, labels: string[]) {
+  constructor(
+    lineIndex: number,
+    text: string,
+    id: number,
+    labels: string[],
+    file: SyncViewFile,
+  ) {
     this.id = id;
     this.lineIndex = lineIndex;
     this.matchText = text;
     this.isClean = false;
     this.channelLabels = labels;
     this.checked = false;
+    this.hostFile = file;
   }
 
   getChannelLabels(): string[] {
@@ -50,7 +58,13 @@ export class WaitCode {
   getText() {
     return this.matchText;
   }
+
+  getHostFile() {
+    return this.hostFile;
+  }
 }
+
+const matchedWaitCodes: Barrier[] = [];
 
 const matchDecorationType = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor("editor.findMatchHighlightBackground"),
@@ -92,109 +106,30 @@ export function channelSync(session: SyncViewSession) {
       throw vscode.window.showErrorMessage("Cannot find document.");
     }
     file.pushWaitCode(
-      findMatches(doc.getText(), syncPattern, session, file.getChannelLabel()),
+      findWaitCodes(
+        doc.getText(),
+        syncPattern,
+        session,
+        file
+      ),
     );
   }
 
   const maxCount: number = session.getMaxWaitCodes();
 
-  const currentID: Map<string, number> = new Map(
-    syncViewFiles.map((file) => [file.getChannelLabel(), 0]),
-  );
+  //check for matching wait codes across files
+  checkForMatchingWaitCodes(session, maxCount);
+  resetWaitCodeChecking(session);
 
+  //check for out of order sync codes
+  checkForOutOfOrderWaitCodes(session);
+  resetWaitCodeChecking(session);
+
+  //mark all waitcodes dirty after first dirty waitcode
+  cascadeDirtyWaitCodes(session);
+
+  //warn user of duplicate wait codes
   checkForDuplicateWaitCodes(session);
-
-  // for (const file of syncViewFiles) {
-  //   const currentChannelLabel = file.getChannelLabel();
-  //   for (const wc of file.getWaitCodes()) {
-  //     if (wc.isChecked()) continue;
-  //     let channelsToCheck = wc.getChannelLabels();
-  //     if (channelsToCheck.length === 0) {
-  //       channelsToCheck = [...session.getChannelLabels().keys()].filter((l) => l !== currentChannelLabel);
-  //     }
-  //     for (const channel of channelsToCheck) {
-  //       const fileToMatch = session.getFileByLabel(channel);
-  //       if (!fileToMatch) continue;
-
-  //       const matchingWaitCode = fileToMatch.getMatchingWaitCode(wc.getText());
-  //       if (!matchingWaitCode) {
-
-  //       } else {
-
-  //       }
-
-  //     }
-  //   }
-  // }
-
-  for (let i = 0; i < maxCount; i++) {
-    for (const file of syncViewFiles) {
-      const waitCode = file.getWaitCodes()[i];
-      const currentChannelLabel = file.getChannelLabel();
-      if (!waitCode) continue;
-      if (waitCode.getCleanliness()) continue;
-      if (waitCode.isChecked()) continue;
-
-      let channelsToCheck = waitCode.getChannelLabels();
-      if (channelsToCheck.length === 0) {
-        channelsToCheck = [...session.getChannelLabels().keys()].filter(
-          (l) => l !== currentChannelLabel,
-        );
-      }
-      log("---------------------------------------");
-      log(`Current channel label: ${currentChannelLabel}`);
-      log(`Channels to check: ${channelsToCheck}`);
-      const matchingWaitCodes: [WaitCode, string][] = [];
-
-      for (const channel of channelsToCheck) {
-        log(`Checking channel ${channel} for ${waitCode.getText()}`);
-        const matchingChannel = session.getFileByLabel(channel);
-        if (!matchingChannel) continue;
-        const id = currentID.get(channel);
-        if (id === undefined) {
-          break;
-        }
-        const matchingWaitCode = matchingChannel.getMatchingWaitCode(
-          waitCode.getText(),
-        );
-        if (!matchingWaitCode) {
-          log("Did not find.");
-          continue;
-        }
-        if (
-          matchingWaitCode.getChannelLabels().includes(currentChannelLabel) ||
-          matchingWaitCode.getChannelLabels().length === 0
-        ) {
-          matchingWaitCode.flagCleanliness(true);
-          matchingWaitCode.markAsChecked(true);
-          matchingWaitCodes.push([matchingWaitCode, channel]);
-          log(`Found clean waitcode: ${waitCode.getText()}`);
-        } else {
-          matchingWaitCodes.push([matchingWaitCode, channel]);
-          log(`Found dirty waitcode: ${waitCode.getText()}`);
-        }
-      }
-
-      if ([...matchingWaitCodes.entries()].length === 0) continue;
-      if (
-        matchingWaitCodes.length !== channelsToCheck.length ||
-        !matchingWaitCodes.every((wc) => wc[0].getCleanliness() === true)
-      ) {
-        for (const wc of matchingWaitCodes) {
-          wc[0].flagCleanliness(false);
-        }
-      } else {
-        waitCode.flagCleanliness(true);
-        waitCode.markAsChecked(true);
-        for (const wc of matchingWaitCodes) {
-          wc[0].markAsChecked(true);
-        }
-      }
-    }
-  }
-  // resetWaitCodeChecking(session);
-  // checkForOutOfOrderWaitCodes(session);
-  // cascadeDirtyWaitCodes(session);
 
   for (const file of syncViewFiles) {
     const editor = vscode.window.visibleTextEditors.find(
@@ -223,11 +158,11 @@ export function channelSync(session: SyncViewSession) {
   }
 }
 
-function findMatches(
+function findWaitCodes(
   text: string,
   pattern: string,
   session: SyncViewSession,
-  channelLabel: string,
+  file: SyncViewFile
 ): WaitCode[] {
   if (!pattern) return [];
   let regex: RegExp;
@@ -255,7 +190,8 @@ function findMatches(
         lineIndex,
         matchText,
         id++,
-        present.filter((l) => l !== channelLabel),
+        present.filter((l) => l !== file.getChannelLabel()),
+        file,
       ),
     );
   });
@@ -272,7 +208,9 @@ function checkForDuplicateWaitCodes(session: SyncViewSession): void {
 
     waitCodes.forEach((wc) => {
       if (checkedWCs.has(wc.getText())) {
-        lines.push(`Channel ${file.getChannelNumber()}, line ${wc.getLineIndex() + 1}: ${wc.getText()}`);
+        lines.push(
+          `Channel ${file.getChannelNumber()}, line ${wc.getLineIndex() + 1}: ${wc.getText()}`,
+        );
       } else {
         checkedWCs.add(wc.getText());
       }
@@ -289,125 +227,125 @@ function checkForDuplicateWaitCodes(session: SyncViewSession): void {
   duplicateStatusItem.show();
 }
 
-function longestIncreasingKeep(seq: number[]): Set<number> {
-  // returns indices of seq that belong to one longest strictly-increasing subsequence
-  const tails: number[] = []; // seq value at end of best run of each length
-  const tailIdx: number[] = [];
-  const prev: number[] = new Array(seq.length).fill(-1);
+//uses Tarjans SCC
+function checkForOutOfOrderWaitCodes(session: SyncViewSession): void {
+  const edgesMap = buildEdgesMap(session.getSyncFiles());
 
-  seq.forEach((v, i) => {
-    let lo = 0,
-      hi = tails.length;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      if (tails[mid] < v) lo = mid + 1;
-      else hi = mid;
+  let visitCounter = 0;
+  const visitNumber = new Map<Barrier, number>();
+  const lowest = new Map<Barrier, number>();
+  const path: Barrier[] = [];
+  const onPath = new Set<Barrier>();
+  const groups: Barrier[][] = [];
+
+  function walk(barrier: Barrier): void {
+    visitNumber.set(barrier, visitCounter);
+    lowest.set(barrier, visitCounter);
+    visitCounter++;
+    path.push(barrier);
+    onPath.add(barrier);
+
+    for (const next of edgesMap.get(barrier) ?? []) {
+      if (!visitNumber.has(next)) {
+        walk(next);
+        lowest.set(barrier, Math.min(lowest.get(barrier)!, lowest.get(next)!));
+      } else if (onPath.has(next)) {
+        lowest.set(barrier, Math.min(lowest.get(barrier)!, visitNumber.get(next)!));
+      }
     }
-    tails[lo] = v;
-    tailIdx[lo] = i;
-    prev[i] = lo > 0 ? tailIdx[lo - 1] : -1;
-  });
 
-  const keep = new Set<number>();
-  let k = tailIdx.length ? tailIdx[tailIdx.length - 1] : -1;
-  while (k !== -1) {
-    keep.add(k);
-    k = prev[k];
+    if (lowest.get(barrier) === visitNumber.get(barrier)) {
+      const group: Barrier[] = [];
+      let member: Barrier;
+      do {
+        member = path.pop()!;
+        onPath.delete(member);
+        group.push(member);
+      } while (member !== barrier);
+      groups.push(group);
+    }
   }
-  return keep;
+
+  for (const barrier of edgesMap.keys()) {
+    if (!visitNumber.has(barrier)) walk(barrier);
+  }
+
+  // a group of 2+ barriers is a knot: flag every wait code in it dirty
+  for (const group of groups) {
+    if (group.length < 2) continue;
+    for (const barrier of group) {
+      for (const wc of barrier.matched) wc.flagCleanliness(false);
+    }
+  }
 }
 
-function checkForOutOfOrderWaitCodes(session: SyncViewSession): void {
-  const files = session.getSyncFiles();
-  const labels = files.map((f) => f.getChannelLabel());
-  const outOfOrder = new Set<WaitCode>();
+type Barrier = {
+  requiredCount: number,
+  matched: WaitCode[]
+};
 
-  // Per file: text -> first clean wait code with that text (duplicates are already red)
-  const byText = files.map((file) => {
-    const map = new Map<string, WaitCode>();
-    for (const wc of file.getWaitCodes()) {
-      if (!wc.getCleanliness() || map.has(wc.getText())) continue;
-      map.set(wc.getText(), wc);
-    }
-    return map;
-  });
-
-  const targets = (wc: WaitCode, other: string) =>
-    wc.getChannelLabels().length === 0 || wc.getChannelLabels().includes(other);
-
-  for (let i = 0; i < files.length; i++) {
-    for (let j = i + 1; j < files.length; j++) {
-      const bMap = byText[j];
-      const bIndex = new Map(
-        files[j].getWaitCodes().map((wc, idx) => [wc, idx]),
-      );
-
-      // wait codes in A (line order) that have a counterpart in B
-      const shared = files[i].getWaitCodes().filter((wc) => {
-        const b = bMap.get(wc.getText());
-        return (
-          byText[i].get(wc.getText()) === wc &&
-          b !== undefined &&
-          targets(wc, labels[j]) &&
-          targets(b, labels[i])
-        );
-      });
-
-      const seq = shared.map((wc) => bIndex.get(bMap.get(wc.getText())!)!);
-      const keep = longestIncreasingKeep(seq);
-
-      seq.forEach((_, k) => {
-        if (keep.has(k)) return;
-        outOfOrder.add(shared[k]);
-        outOfOrder.add(bMap.get(shared[k].getText())!);
-      });
+function buildEdgesMap(files: SyncViewFile[]): Map<Barrier, Set<Barrier>> {
+  // which barrier does each wait code belong to?
+  const barrierOf = new Map<WaitCode, Barrier>();
+  for (const b of matchedWaitCodes) {
+    for (const wc of b.matched) {
+      if (!barrierOf.has(wc)) barrierOf.set(wc, b);
     }
   }
 
-  // Apply after all pairs so one pair's result doesn't change another's input
-  for (const wc of outOfOrder) wc.flagCleanliness(false);
+  // every barrier gets an entry, even with no arrows
+  const edges = new Map<Barrier, Set<Barrier>>();
+  for (const b of matchedWaitCodes) edges.set(b, new Set());
+
+  // each file adds one arrow per pair of neighbors
+  for (const file of files) {
+    const codes = [...file.getWaitCodes()].sort(
+      (a, b) => a.getLineIndex() - b.getLineIndex(),
+    );
+    for (let i = 1; i < codes.length; i++) {
+      const from = barrierOf.get(codes[i - 1]);
+      const to = barrierOf.get(codes[i]);
+      if (!from || !to || from === to) continue;
+      edges.get(from)!.add(to);
+    }
+  }
+  return edges;
 }
 
 function cascadeDirtyWaitCodes(session: SyncViewSession): void {
-  const files = session.getSyncFiles();
-
-  // Mark a wait code dirty, and mark its counterparts in other files dirty too.
-  const markDirty = (wc: WaitCode, file: SyncViewFile): void => {
-    if (!wc.getCleanliness()) return; // already dirty, nothing new to propagate
-    wc.flagCleanliness(false);
-
-    const own = file.getChannelLabel();
-    let channels = wc.getChannelLabels();
-    if (channels.length === 0) {
-      channels = [...session.getChannelLabels().keys()].filter(
-        (l) => l !== own,
-      );
+  // which barrier does each wait code belong to?
+  const barrierOf = new Map<WaitCode, Barrier>();
+  for (const b of matchedWaitCodes) {
+    for (const wc of b.matched) {
+      if (!barrierOf.has(wc)) barrierOf.set(wc, b);
     }
+  }
 
-    for (const channel of channels) {
-      const other = session.getFileByLabel(channel);
-      if (!other) continue;
-      const match = other.getMatchingWaitCode(wc.getText());
-      if (match) markDirty(match, other);
-    }
-  };
+  // each file's wait codes in line order
+  const ordered = session
+    .getSyncFiles()
+    .map((file) =>
+      [...file.getWaitCodes()].sort(
+        (a, b) => a.getLineIndex() - b.getLineIndex(),
+      ),
+    );
 
   let changed: boolean;
   do {
     changed = false;
-    for (const file of files) {
-      const ordered = [...file.getWaitCodes()].sort(
-        (a, b) => a.getLineIndex() - b.getLineIndex(),
-      );
-      let dirtySeen = false;
-      for (const wc of ordered) {
-        if (dirtySeen) {
-          if (wc.getCleanliness()) {
-            markDirty(wc, file);
+    for (const codes of ordered) {
+      const first = codes.findIndex((wc) => !wc.getCleanliness());
+      if (first === -1) continue; // no dirty code in this file
+
+      for (let i = first + 1; i < codes.length; i++) {
+        const wc = codes[i];
+        // the code itself plus its copies in other files
+        const targets = barrierOf.get(wc)?.matched ?? [wc];
+        for (const t of targets) {
+          if (t.getCleanliness()) {
+            t.flagCleanliness(false);
             changed = true;
           }
-        } else if (!wc.getCleanliness()) {
-          dirtySeen = true;
         }
       }
     }
@@ -418,6 +356,51 @@ function resetWaitCodeChecking(session: SyncViewSession): void {
   for (const file of session.getSyncFiles()) {
     for (const wc of file.getWaitCodes()) {
       wc.markAsChecked(false);
+    }
+  }
+}
+
+function checkForMatchingWaitCodes(
+  session: SyncViewSession,
+  count: number,
+): void {
+  matchedWaitCodes.length = 0;
+  resetWaitCodeChecking(session);
+  for (let i = 0; i < count; i++) {
+    for (const file of session.getSyncFiles()) {
+      const wc = file.getWaitCodeByID(i);
+      if (!wc) continue;
+      if (wc.isChecked()) continue;
+
+      const wcList = [wc];
+
+      const currentChannelLabel = file.getChannelLabel();
+      let channelsToCheck = wc.getChannelLabels();
+      if (channelsToCheck.length === 0) {
+        channelsToCheck = [...session.getChannelLabels().keys()].filter(
+          (l) => l !== currentChannelLabel,
+        );
+      }
+
+      for (const channelLabel of channelsToCheck) {
+        const file = session.getFileByLabel(channelLabel);
+        if (!file) continue;
+        const matchedWC = file.getMatchingWaitCode(wc.getText());
+        if (!matchedWC) continue;
+        wcList.push(matchedWC);
+        matchedWC.markAsChecked(true);
+      }
+      matchedWaitCodes.push({
+        requiredCount: channelsToCheck.length + 1,
+        matched: wcList,
+      });
+      wc.markAsChecked(true);
+    }
+  }
+  for (const match of matchedWaitCodes) {
+    if (match.requiredCount !== match.matched.length) continue;
+    for (const wc of match.matched) {
+      wc.flagCleanliness(true);
     }
   }
 }
